@@ -88,7 +88,6 @@ export const useUserStore = defineStore({
         const { goHome = true, mode, ...loginParams } = params;
         const data = await loginApi(loginParams, mode);
         const { access_token, refresh_token } = data;
-
         // save token
         this.setToken(access_token);
         this.setRefreshToken(refresh_token);
