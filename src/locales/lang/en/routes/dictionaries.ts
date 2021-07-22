@@ -3,5 +3,7 @@ export default {
   serviceperidentity: 'serviceperidentity',
   servicePerType: 'servicePerType',
   serviceSkillDictionary: 'serviceSkillDictionary',
-  servicePerLevelDictionary: 'servicePerLevelDictionary'
+  servicePerLevelDictionary: 'servicePerLevelDictionary',
+  serviceTypeDictionary: 'serviceTypeDictionary',
+  ageStageDictionary: 'ageStageDictionary'
 };

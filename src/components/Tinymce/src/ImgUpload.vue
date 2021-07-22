@@ -7,6 +7,7 @@
       :action="uploadUrl"
       :showUploadList="false"
       accept=".jpg,.jpeg,.gif,.png,.webp"
+      :headers="headers"
     >
       <a-button type="primary">
         {{ t('component.upload.imgUpload') }}
@@ -22,6 +23,8 @@
   import { useGlobSetting } from '/@/hooks/setting';
   import { useI18n } from '/@/hooks/web/useI18n';
 
+  import { getToken } from '/@/utils/auth';
+
   export default defineComponent({
     name: 'TinymceImageUpload',
     components: { Upload },
@@ -34,15 +37,21 @@
     setup(_, { emit }) {
       let uploading = false;
 
-      const { uploadUrl } = useGlobSetting();
+      const { uploadUrl, imgurlPrefix } = useGlobSetting();
       const { t } = useI18n();
       const { prefixCls } = useDesign('tinymce-img-upload');
+
+      const token = getToken();
+
+      const headers = {
+        Authorization : 'Bearer '+ token
+      }
 
       function handleChange(info: Recordable) {
         const file = info.file;
         const status = file?.status;
 
-        const url = file?.response?.url;
+        const url = imgurlPrefix + file?.response?.url;
         const name = file?.name;
         if (status === 'uploading') {
           if (!uploading) {
@@ -63,6 +72,7 @@
         handleChange,
         uploadUrl,
         t,
+        headers
       };
     },
   });

@@ -48,6 +48,24 @@ const dictionarieManagement: AppRouteModule = {
         affix: true,
         title: t('routes.dictionaries.servicePerLevelDictionary')
       }
+    },
+    {
+      path: 'serviceTypeDictionary',
+      name: 'ServiceTypeDictionary',
+      component: () => import('/@/views/dictionary/serviceTypeDictionary/index.vue'),
+      meta: {
+        affix: true,
+        title: t('routes.dictionaries.serviceTypeDictionary')
+      }
+    },
+    {
+      path: 'ageStageDictionary',
+      name: 'AgeStageDictionary',
+      component: () => import('/@/views/dictionary/ageStageDictionary/index.vue'),
+      meta: {
+        affix: true,
+        title: t('routes.dictionaries.ageStageDictionary')
+      }
     }
   ],
 };

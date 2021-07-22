@@ -1,0 +1,20 @@
+export interface PackageList{
+  id?:string,
+  packageName:string,
+  packageIntroduction:string,
+  packageTypeId:string,
+  packageAddressType:number,
+  serviceScope:string,
+  price:number,
+  serviceLength:number,
+  unit:number,
+  details:string,
+  userNotice:string,
+  recommendation:number,
+  status:boolean,
+  serviceHospitalInfo:Array<string>,
+  serviceArea:Array<string>,
+  personType:Array<string>,
+  thumbnail:string,
+  fileLists:Array<string>
+}

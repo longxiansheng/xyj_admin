@@ -22,6 +22,14 @@ const menu: MenuModule = {
       {
         path: 'servicePerLevelDictionary',
         name: t('routes.dictionaries.servicePerLevelDictionary')
+      },
+      {
+        path: 'serviceTypeDictionary',
+        name: t('routes.dictionaries.serviceTypeDictionary')
+      },
+      {
+        path: 'ageStageDictionary',
+        name: t('routes.dictionaries.ageStageDictionary')
       }
     ],
   },
