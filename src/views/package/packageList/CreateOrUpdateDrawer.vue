@@ -4,8 +4,8 @@
       <BasicForm @register="registerForm">
         <template #serviceLength="{ model, field }">
           <a-input-group compact>
-            <a-input-number style="width:70%" v-model:value="model[field]" precision="0" />
-            <a-select v-model:value="model['unit']" style="width:30%">
+            <a-input-number style="width: 70%" v-model:value="model[field]" precision="0" />
+            <a-select v-model:value="model['unit']" style="width: 30%">
               <a-select-option value=1>天</a-select-option>
               <a-select-option value=2>月（26天）</a-select-option>
               <a-select-option value=3>年</a-select-option>
@@ -65,7 +65,7 @@
   </BasicDrawer>
 </template>
 <script lang="ts">
-  import { defineComponent, h, ref } from 'vue';
+  import { defineComponent, h, ref, unref } from 'vue';
 
   import { BasicForm, FormSchema, useForm } from '/@/components/Form';
   import { BasicDrawer, useDrawerInner } from '/@/components/Drawer';
@@ -74,7 +74,7 @@
   import { Icon } from '/@/components/Icon';
   import { MoreOutlined } from '@ant-design/icons-vue';
 
-  import { GetAll } from '/@/api/dictionary/serviceTypeDictionary/serviceTypeDictionary';
+  import { getTypeTreeForBackend } from '/@/api/dictionary/servicePackType/servicePackType';
   import { GetServiceHospitalInfoList } from '/@/api/serviceHospitalInfo/serviceHospitalInfo';
   import { getServicePerTypeList } from '/@/api/dictionary/servicePerTypedictionary/servicePerTypedictionary';
   import { GetServiceItemList } from '/@/api/serviceItem/serviceItem';
@@ -103,7 +103,7 @@
         treeCheckable: true,
         treeDefaultExpandAll: true,
         replaceFields: {
-          title: 'serviceTypeName',
+          title: 'name',
           key: 'id',
           value: 'id',
         },
@@ -297,7 +297,10 @@
   export default defineComponent({
     components: { BasicDrawer, BasicForm, [Card.name]: Card, Upload, Icon, MoreOutlined, Modal, [Input.name]: Input, [InputNumber.name]: InputNumber, [Input.Group.name]: Input.Group, [Select.name]: Select, ASelectOption: Select.Option, },
 
-    setup() {
+    setup(_, { emit }) {
+      const isUpdate = ref(true);
+      const rowId = ref('');
+
       const token = getToken();
 
       const headers = {
@@ -306,21 +309,55 @@
 
       const Thumbnail = ref();
       const Thumbnailloading = ref(false);
-      const FileList = ref();
+      const FileList = ref(Array<any>());
       const previewVisible = ref(false);
       const previewImage = ref('');
 
-      const [registerForm, { resetFields, updateSchema, validate }] = useForm({
+      const [registerForm, { resetFields, updateSchema, validate, setFieldsValue }] = useForm({
         labelWidth: 100,
         schemas: schemas,
         showActionButtonGroup: false,
         baseColProps: { lg: 24, md: 24 },
       });
 
-      const [registerDrawer]  = useDrawerInner(async () => {
+      const [registerDrawer, { closeDrawer }]  = useDrawerInner(async (data) => {
         resetFields();
+        FileList.value =[];
+        Thumbnail.value = undefined;
 
-        const treeData = await (await GetAll()).items;
+        isUpdate.value = !!data?.isUpdate;
+
+        if (unref(isUpdate)) {
+          rowId.value = data.data.package.id;
+          Thumbnail.value = data.data.thumbnail;
+
+          data.data.package.thumbnail=data.data.thumbnail;
+          data.data.package.productDisplay = [];
+          const temppackageTypeId= data.data.package.packageTypeId;
+          data.data.package.packageTypeId =[];
+          data.data.package.packageTypeId.push(temppackageTypeId);
+          data.data.package.details = JSON.parse(data.data.package.details);
+          data.data.package.userNotice = JSON.parse(data.data.package.userNotice),
+          data.data.packageDisplay.forEach(element => {
+            var item ={
+              uid: element.id,
+              name: element.realName,
+              status: 'done',
+              url: element.url,
+              response:element
+            };
+            FileList.value.push(item);
+          });
+          setFieldsValue({
+            ...data.data.package,
+          });
+        }
+        else{
+          rowId.value = '';
+        }
+
+
+        const treeData = await getTypeTreeForBackend();
         const serviceItemData = await (await GetServiceItemList()).items;
 
         updateSchema([
@@ -333,7 +370,7 @@
             componentProps: { treeData: serviceItemData }
           }
         ]);
-      });
+      })
 
       async function submitAll(){
         const values = await validate();
@@ -343,6 +380,7 @@
           FileLists.push(item.response.id)
         });
         let data:PackageList={
+          id: rowId.value == ""? undefined: rowId.value,
           packageName:values.packageName,
           packageIntroduction:values.packageIntroduction,
           packageTypeId:values.packageTypeId[0],
@@ -351,8 +389,8 @@
           price:values.price,
           serviceLength:Number(values.serviceLength),
           unit:Number(values.unit),
-          details:values.details,
-          userNotice:values.userNotice,
+          details:JSON.stringify(values.details),
+          userNotice:JSON.stringify(values.userNotice),
           recommendation:values.recommendation,
           status:values.status,
           serviceHospitalInfo:values.serviceHospitalInfo,
@@ -360,9 +398,11 @@
           personType:values.personType,
           thumbnail:Thumbnail.value.id,
           fileLists:FileLists,
+          serviceItem:values.serviceItem,
         }
-        CreateOrUpdate(data).then(res => {
-          console.log(res)
+        CreateOrUpdate(data).then( () => {
+          emit('success');
+          closeDrawer();
         })
       }
 
@@ -399,6 +439,7 @@
       }
 
       function handlePreview(file:any) {
+        console.log(file)
         previewImage.value = file?.response?.url || file.preview;
         previewVisible.value = true;
       }
@@ -412,7 +453,7 @@
   });
 </script>
 
-<style>
+<style scoped>
 .avatar-uploader > .ant-upload {
   width: 128px;
   height: 128px;
